@@ -74,7 +74,7 @@ export default function CoverLetterEditor({ clId, onNavigate }) {
         format
       });
       toast.success(`Cover Letter ${format.toUpperCase()} export generated!`);
-      window.open(api.getDownloadUrl(res.export.id), '_blank');
+      await api.downloadExport(res.export.id, res.export.file_name);
     } catch (err) {
       toast.error(`Export failed: ${err.message}`);
     } finally {

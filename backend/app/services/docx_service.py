@@ -29,7 +29,9 @@ def add_hyperlink(paragraph, url, text, color="6D4AFF", underline=True):
         rPr.append(u)
 
     new_run.append(rPr)
-    new_run.text = text
+    text_elem = OxmlElement('w:t')
+    text_elem.text = text
+    new_run.append(text_elem)
     hyperlink.append(new_run)
     paragraph._p.append(hyperlink)
     return hyperlink
@@ -40,132 +42,23 @@ def docx_relationship_type():
 def parse_docx_resume(file_path: str) -> dict:
     """
     Extracts text and sections from an uploaded DOCX file for staging review.
+    Handles paragraphs, bullet lists, and table structures cleanly.
     """
     doc = Document(file_path)
-    paragraphs = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
-    full_text = "\n".join(paragraphs)
-    
-    extracted = {
-        'name': '',
-        'headline': '',
-        'email': '',
-        'phone': '',
-        'city_country': '',
-        'summary': '',
-        'skills': [],
-        'experiences': [],
-        'projects': [],
-        'education': [],
-        'links': []
-    }
-    
-    if not paragraphs:
-        return extracted
-    
-    # 1. First line is usually Name
-    extracted['name'] = paragraphs[0][:100]
-    
-    # 2. Extract email, phone, links using regex
-    email_match = re.search(r'[\w\.-]+@[\w\.-]+\.\w+', full_text)
-    if email_match:
-        extracted['email'] = email_match.group(0)
-        
-    phone_match = re.search(r'(\+?\d{1,3}[-.\s]?)?(\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}', full_text)
-    if phone_match:
-        extracted['phone'] = phone_match.group(0)
-        
-    url_matches = re.findall(r'https?://[^\s]+|linkedin\.com/[^\s]+|github\.com/[^\s]+', full_text)
-    for u in url_matches:
-        url_clean = u.rstrip('.,;')
-        label = "Website"
-        link_type = "other"
-        if "linkedin" in url_clean.lower():
-            label = "LinkedIn"
-            link_type = "linkedin"
-        elif "github" in url_clean.lower():
-            label = "GitHub"
-            link_type = "github"
-        elif "portfolio" in url_clean.lower():
-            label = "Portfolio"
-            link_type = "portfolio"
-        extracted['links'].append({'label': label, 'url': url_clean if url_clean.startswith('http') else f"https://{url_clean}", 'link_type': link_type})
-
-    # 3. Section breakdown heuristic
-    current_section = None
-    section_map = {
-        'summary': ['summary', 'profile', 'about', 'objective'],
-        'skills': ['skills', 'technologies', 'technical skills', 'core competencies'],
-        'experiences': ['experience', 'work experience', 'employment', 'history'],
-        'projects': ['projects', 'personal projects', 'key projects'],
-        'education': ['education', 'academic background', 'academics']
-    }
-
-    current_block = []
-    
-    def classify_header(line):
-        lower = line.lower().strip(': -#')
-        for s_type, keywords in section_map.items():
-            if lower in keywords or any(k in lower and len(lower) < 30 for k in keywords):
-                return s_type
-        return None
-
-    # Parse line by line
-    for line in paragraphs[1:]:
-        header_type = classify_header(line)
-        if header_type:
-            # Commit previous block if any
-            process_section_block(current_section, current_block, extracted)
-            current_section = header_type
-            current_block = []
-        elif current_section:
-            current_block.append(line)
-        else:
-            if not extracted['headline'] and len(line) < 120 and '@' not in line:
-                extracted['headline'] = line
-            elif not extracted['city_country'] and any(c in line for c in [',', 'CA', 'NY', 'USA', 'India', 'UK', 'Remote']):
-                extracted['city_country'] = line
-
-    process_section_block(current_section, current_block, extracted)
-    return extracted
-
-def process_section_block(section_type, block_lines, extracted):
-    if not section_type or not block_lines:
-        return
-    text_block = "\n".join(block_lines)
-    
-    if section_type == 'summary':
-        extracted['summary'] = text_block
-    elif section_type == 'skills':
-        # Split by commas or bullets
-        items = re.split(r'[,|•·\n]+', text_block)
-        for it in items:
-            it = it.strip(' -*:')
-            if it and len(it) < 40:
-                extracted['skills'].append({'name': it, 'category': 'General'})
-    elif section_type == 'experiences':
-        # Simple chunking
-        extracted['experiences'].append({
-            'company': block_lines[0][:80] if block_lines else 'Company',
-            'title': block_lines[1][:80] if len(block_lines) > 1 else 'Role',
-            'dates': 'Present',
-            'location': '',
-            'description': text_block,
-            'bullets': [b.strip(' -•·*') for b in block_lines[2:] if b.strip()]
-        })
-    elif section_type == 'projects':
-        extracted['projects'].append({
-            'name': block_lines[0][:80] if block_lines else 'Project',
-            'technologies': '',
-            'description': text_block,
-            'bullets': [b.strip(' -•·*') for b in block_lines[1:] if b.strip()]
-        })
-    elif section_type == 'education':
-        extracted['education'].append({
-            'institution': block_lines[0][:100] if block_lines else 'University',
-            'degree': block_lines[1][:100] if len(block_lines) > 1 else 'Degree',
-            'dates': '',
-            'details': text_block
-        })
+    all_lines = []
+    for p in doc.paragraphs:
+        t = p.text.strip()
+        if t:
+            all_lines.append(t)
+    for table in doc.tables:
+        for row in table.rows:
+            row_text = " | ".join(cell.text.strip() for cell in row.cells if cell.text.strip())
+            if row_text:
+                all_lines.append(row_text)
+                
+    full_text = "\n".join(all_lines)
+    from app.services.resume_parser import parse_resume_text
+    return parse_resume_text(full_text)
 
 def generate_resume_docx(doc_model: dict, output_path: str, template_id: str = 'modern-ats') -> str:
     """

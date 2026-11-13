@@ -178,34 +178,38 @@ export default function ResumeEditor({ resumeId, onNavigate }) {
   // Suggestion review
   const handleReviewSuggestion = async (sugg, action, editedText) => {
     try {
-      await api.reviewSuggestion(resumeId, sugg.id, {
+      const res = await api.reviewSuggestion(resumeId, sugg.id, {
         action,
         item_type: sugg.type,
         item_index: sugg.index || 0,
         edited_text: editedText
       });
 
-      // Update local doc state immediately
       if (action === 'accept' || action === 'edit') {
-        const textToApply = action === 'edit' ? editedText : sugg.suggested_text;
-        updateDocumentModel((prev) => {
-          const next = { ...prev };
-          if (sugg.type === 'summary') {
-            next.summary = textToApply;
-          } else if (sugg.type === 'bullet') {
-            const sec = sugg.section;
-            if (next[sec]) {
-              for (const item of next[sec]) {
-                if (item.bullets?.includes(sugg.original_text)) {
-                  const bIdx = item.bullets.indexOf(sugg.original_text);
-                  item.bullets[bIdx] = textToApply;
-                  break;
+        if (res?.resume?.document_json) {
+          setDocJson(res.resume.document_json);
+          setResume(res.resume);
+        } else {
+          const textToApply = action === 'edit' ? editedText : sugg.suggested_text;
+          updateDocumentModel((prev) => {
+            const next = { ...prev };
+            if (sugg.type === 'summary') {
+              next.summary = textToApply;
+            } else if (sugg.type === 'bullet') {
+              const sec = sugg.section;
+              if (next[sec]) {
+                for (const item of next[sec]) {
+                  if (item.bullets?.includes(sugg.original_text)) {
+                    const bIdx = item.bullets.indexOf(sugg.original_text);
+                    item.bullets[bIdx] = textToApply;
+                    break;
+                  }
                 }
               }
             }
-          }
-          return next;
-        });
+            return next;
+          });
+        }
         toast.success(`Suggestion applied to ${sugg.section || 'summary'}!`);
       } else {
         toast.info('Suggestion rejected.');
@@ -228,8 +232,8 @@ export default function ResumeEditor({ resumeId, onNavigate }) {
         format
       });
       toast.success(`${format.toUpperCase()} export generated!`);
-      // Trigger download
-      window.open(api.getDownloadUrl(res.export.id), '_blank');
+      // Trigger authenticated download directly
+      await api.downloadExport(res.export.id, res.export.file_name);
     } catch (err) {
       toast.error(`Export failed: ${err.message}`);
     } finally {
@@ -653,20 +657,20 @@ export default function ResumeEditor({ resumeId, onNavigate }) {
 
         {/* PANEL 3: Right Live Preview + Collapsible Suggestions (4.5 cols) */}
         <div className="lg:col-span-4 space-y-4">
-          {/* AI Suggestions Accordion / Cards */}
+          {/* Recommendations Accordion / Cards */}
           {pendingSuggestions.length > 0 && (
-            <div className="bg-lavender-surface/40 rounded-2xl border border-lavender-border p-4 shadow-soft">
+            <div className="bg-white rounded-2xl border border-app-border p-4 shadow-xs">
               <div
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setSuggestionsOpen(!suggestionsOpen)}
               >
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-brand-600" />
-                  <span className="text-xs font-extrabold text-brand-700 uppercase tracking-wide">
-                    AI Suggestions ({pendingSuggestions.length})
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-brand-500" />
+                  <span className="text-xs font-semibold text-content-primary">
+                    Tailoring Recommendations ({pendingSuggestions.length})
                   </span>
                 </div>
-                <span className="text-xs text-brand-600 font-semibold">
+                <span className="text-xs text-brand-600 font-medium">
                   {suggestionsOpen ? 'Collapse' : 'Expand'}
                 </span>
               </div>

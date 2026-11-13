@@ -101,7 +101,30 @@ export const api = {
 
   // Exports
   createExport: (payload) => request('/exports', { method: 'POST', body: JSON.stringify(payload) }),
-  getDownloadUrl: (exportId) => `/api/v1/exports/${exportId}`,
+  getDownloadUrl: (exportId) => {
+    const token = localStorage.getItem('applymate_token');
+    return `/api/v1/exports/${exportId}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  },
+  downloadExport: async (exportId, fileName) => {
+    const token = localStorage.getItem('applymate_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const res = await fetch(`/api/v1/exports/${exportId}`, { headers });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => null);
+      throw new Error(errJson?.error || 'Failed to download exported file');
+    }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName || 'document';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 150);
+  },
 
   // Applications
   getApplications: (params = '') => request(`/applications${params}`),

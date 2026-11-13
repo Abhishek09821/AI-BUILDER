@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Sparkles,
   Briefcase,
   Building2,
   Globe,

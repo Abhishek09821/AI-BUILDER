@@ -207,7 +207,7 @@ export default function MasterProfile({ onNavigate, onSelectResume }) {
             onClick={handleGenerateMasterResume}
             className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-soft transition-all"
           >
-            <Sparkles className="w-4 h-4" />
+            <FileText className="w-4 h-4" />
             <span>Sync Master Resume</span>
           </button>
         </div>

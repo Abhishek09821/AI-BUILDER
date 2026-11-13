@@ -106,10 +106,12 @@ def confirm_import(import_id):
                 link_type=link.get('link_type', 'other')
             ))
 
-    # 3. Add Skills
+    # 3. Add Skills (de-duplicated)
+    existing_skills = {f.data.get('name', '').lower() for f in profile.facts if f.type == 'skill' and f.data}
     for skill in approved_payload.get('skills', []):
         s_name = skill.get('name') if isinstance(skill, dict) else str(skill)
-        if s_name:
+        if s_name and s_name.lower() not in existing_skills:
+            existing_skills.add(s_name.lower())
             db.session.add(ProfileFact(
                 profile_id=profile.id,
                 type='skill',
@@ -147,6 +149,18 @@ def confirm_import(import_id):
             source='import',
             verified_at=datetime.utcnow()
         ))
+
+    # 7. Add Certifications
+    for cert in approved_payload.get('certifications', []):
+        c_name = cert if isinstance(cert, str) else cert.get('name', '')
+        if c_name:
+            db.session.add(ProfileFact(
+                profile_id=profile.id,
+                type='certification',
+                data={'name': c_name},
+                source='import',
+                verified_at=datetime.utcnow()
+            ))
 
     import_rec.parse_status = 'committed'
     db.session.commit()

@@ -24,7 +24,7 @@ const STATUS_COLUMNS = [
   { id: 'Ready to apply', label: 'Ready to Apply', color: 'border-amber-300 bg-amber-50 text-amber-700' },
   { id: 'Applied', label: 'Applied', color: 'border-blue-300 bg-blue-50 text-blue-700' },
   { id: 'Assessment', label: 'Assessment', color: 'border-indigo-300 bg-indigo-50 text-indigo-700' },
-  { id: 'Interview', label: 'Interview', color: 'border-purple-300 bg-purple-700 text-purple-700' },
+  { id: 'Interview', label: 'Interview', color: 'border-purple-200 bg-purple-50 text-purple-700' },
   { id: 'Offer', label: 'Offer', color: 'border-green-300 bg-green-50 text-green-700' },
   { id: 'Rejected', label: 'Rejected', color: 'border-red-300 bg-red-50 text-red-700' },
   { id: 'Withdrawn', label: 'Withdrawn', color: 'border-slate-300 bg-slate-50 text-slate-700' }

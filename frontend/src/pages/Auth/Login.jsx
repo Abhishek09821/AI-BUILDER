@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ArrowRight, AlertCircle, FileText, CheckCircle2, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Login({ onSwitchToRegister }) {
@@ -27,28 +27,29 @@ export default function Login({ onSwitchToRegister }) {
   };
 
   return (
-    <div className="min-h-screen bg-app-bg flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
-        {/* Brand Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 items-center justify-center text-white shadow-soft mb-3">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-extrabold text-content-primary tracking-tight">ApplyMate</h1>
-          <p className="text-sm text-content-secondary mt-1">
-            Create your career profile once. Tailor reliably for every role.
-          </p>
+    <div className="min-h-screen bg-[#FBFBFE] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        {/* Brand Icon */}
+        <div className="inline-flex w-11 h-11 rounded-xl bg-brand-500 text-white items-center justify-center shadow-sm mb-3">
+          <FileText className="w-5 h-5" />
         </div>
+        <h1 className="text-2xl font-bold text-content-primary tracking-tight">ApplyMate</h1>
+        <p className="mt-1 text-xs text-content-secondary max-w-xs mx-auto">
+          The precision workspace for verified career profiles & tailored applications.
+        </p>
+      </div>
 
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-card border border-app-border p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-content-primary mb-1">Welcome back</h2>
-          <p className="text-xs text-content-secondary mb-6">
-            Log in to manage your Master Profile and tailored applications.
-          </p>
+      <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+        <div className="bg-white py-8 px-6 sm:px-9 shadow-[0_4px_24px_rgba(39,35,58,0.05)] rounded-2xl border border-app-border">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold text-content-primary">Sign in to your account</h2>
+            <p className="text-xs text-content-secondary mt-0.5">
+              Enter your credentials to access your master profile.
+            </p>
+          </div>
 
           {errorMsg && (
-            <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 text-xs text-status-danger">
+            <div className="mb-5 p-3 rounded-xl bg-red-50/80 border border-red-200/80 flex items-start gap-2.5 text-xs text-status-danger">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
@@ -56,35 +57,37 @@ export default function Login({ onSwitchToRegister }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-content-primary mb-1">
-                Email Address
+              <label className="block text-xs font-medium text-content-primary mb-1">
+                Email address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-content-secondary absolute left-3 top-3" />
+                <Mail className="w-4 h-4 text-content-muted absolute left-3 top-2.5" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder="name@company.com"
                   required
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-app-border focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-app-border focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white transition-all text-content-primary placeholder:text-content-muted"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-content-primary mb-1">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-content-primary">
+                  Password
+                </label>
+              </div>
               <div className="relative">
-                <Lock className="w-4 h-4 text-content-secondary absolute left-3 top-3" />
+                <Lock className="w-4 h-4 text-content-muted absolute left-3 top-2.5" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-app-border focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  className="w-full pl-9 pr-3.5 py-2 text-xs rounded-xl border border-app-border focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white transition-all text-content-primary placeholder:text-content-muted"
                 />
               </div>
             </div>
@@ -92,14 +95,14 @@ export default function Login({ onSwitchToRegister }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-semibold text-sm shadow-soft transition-all flex items-center justify-center gap-2"
+              className="w-full mt-3 py-2.5 px-4 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-[0.99] text-white font-medium text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>Log In</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>Sign In</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
@@ -111,15 +114,26 @@ export default function Login({ onSwitchToRegister }) {
               <button
                 type="button"
                 onClick={onSwitchToRegister}
-                className="text-brand-600 hover:underline font-semibold"
+                className="text-brand-500 hover:text-brand-600 font-semibold transition-colors"
               >
-                Sign up free
+                Create one now
               </button>
             </p>
+          </div>
+        </div>
+
+        {/* Feature Highlights */}
+        <div className="mt-8 flex items-center justify-center gap-6 text-[11px] text-content-secondary">
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-status-success" />
+            <span>ATS-tested formats</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Shield className="w-3.5 h-3.5 text-brand-500" />
+            <span>Strict fact provenance</span>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -191,7 +191,9 @@ def generate_resume_draft(job_id):
         
     profile = CareerProfile.query.filter_by(user_id=g.user_id).first()
     if not profile:
-        return jsonify({'error': 'Please complete your Master Career Profile first.'}), 400
+        profile = CareerProfile(user_id=g.user_id, email=g.current_user.email, name=g.current_user.name)
+        db.session.add(profile)
+        db.session.flush()
         
     facts = ProfileFact.query.filter_by(profile_id=profile.id).all()
     links = profile.links
@@ -264,7 +266,9 @@ def generate_cover_letter_draft(job_id):
         
     profile = CareerProfile.query.filter_by(user_id=g.user_id).first()
     if not profile:
-        return jsonify({'error': 'Please complete your Master Career Profile first.'}), 400
+        profile = CareerProfile(user_id=g.user_id, email=g.current_user.email, name=g.current_user.name)
+        db.session.add(profile)
+        db.session.flush()
         
     data = request.get_json() or {}
     tone = data.get('tone', 'Professional')

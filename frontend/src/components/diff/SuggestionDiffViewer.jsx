@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X, Edit3, Sparkles, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Check, X, Edit3, ShieldCheck, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export default function SuggestionDiffViewer({
   suggestion,
@@ -17,18 +17,18 @@ export default function SuggestionDiffViewer({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-lavender-border shadow-soft p-4 transition-all">
+    <div className="bg-white rounded-xl border border-app-border shadow-xs p-4 transition-all">
       {/* Header */}
       <div className="flex items-center justify-between pb-2 mb-3 border-b border-app-border">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="w-4 h-4 text-brand-500" />
-          <span className="text-xs font-bold text-brand-600 uppercase tracking-wide">
+          <CheckCircle2 className="w-3.5 h-3.5 text-brand-500" />
+          <span className="text-xs font-semibold text-content-primary">
             {suggestion.type === 'summary' ? 'Summary Tailoring' : `${suggestion.section || 'Bullet'} Improvement`}
           </span>
         </div>
         <div className="flex items-center gap-1 text-[11px] text-content-secondary font-medium">
           <ShieldCheck className="w-3.5 h-3.5 text-status-success" />
-          <span>Evidence Backed</span>
+          <span>Verified Fact Evidence</span>
         </div>
       </div>
 

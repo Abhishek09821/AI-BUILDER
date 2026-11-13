@@ -146,11 +146,11 @@ export default function JobAnalysisView({ jobId, onNavigate, onSelectResume, onS
             {generatingResume ? (
               <>
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                <span>Generating Suggestions...</span>
+                <span>Tailoring Resume...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <FileText className="w-4 h-4" />
                 <span>Generate Tailored Resume</span>
                 <ChevronRight className="w-4 h-4" />
               </>

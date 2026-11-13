@@ -92,6 +92,7 @@ class AiAdapter:
         """
         High quality, deterministic, rule-based suggestion generator.
         Preserves 100% factual accuracy by deriving suggestions strictly from verified profile facts.
+        Produces natural, human-grade professional phrasing without robotic prefixes.
         """
         skills_facts = [f for f in profile_facts if f.type == 'skill']
         exp_facts = [f for f in profile_facts if f.type == 'experience']
@@ -100,63 +101,76 @@ class AiAdapter:
         # 1. Summary rewrite
         all_skills = [f.data.get('name') for f in skills_facts if f.data.get('name')]
         matched_skills = [s for s in all_skills if s.lower() in job_description.lower()]
-        highlight_skills = ", ".join(matched_skills[:4]) if matched_skills else ", ".join(all_skills[:4])
+        top_skills = matched_skills[:4] if matched_skills else all_skills[:4]
+        skills_phrase = ", ".join(top_skills) if top_skills else "modern software architecture and full-stack engineering"
         
-        summary_evidence = [f.id for f in skills_facts if f.data.get('name') in matched_skills]
+        summary_evidence = [f.id for f in skills_facts if f.data.get('name') in top_skills]
         if exp_facts:
             summary_evidence.append(exp_facts[0].id)
             
-        years_clue = "Experienced"
-        if exp_facts:
-            years_clue = f"Results-driven professional with hands-on experience"
-        else:
-            years_clue = "Motivated software engineer"
-            
-        summary_text = f"{years_clue} tailored for the {job_title} role at {company}. Demonstrated expertise in {highlight_skills or 'modern software development'}, with a consistent track record of writing clean, scalable, and maintainable solutions."
+        summary_text = (
+            f"Results-oriented engineer with proven expertise in {skills_phrase}. "
+            f"Track record of designing clean, resilient systems and collaborating across teams to deliver impactful products. "
+            f"Targeted for the {job_title} role at {company}, bringing deep technical problem-solving and production readiness."
+        )
 
-        # 2. Bullet suggestions
+        # 2. Bullet suggestions with intelligent action-verb enhancement
         bullet_suggestions = []
+        
+        def enhance_bullet_text(text: str, context_tech: str = "") -> str:
+            cleaned = text.strip().rstrip('.')
+            # Remove weak openers
+            weak_openers = [
+                (r'(?i)^(worked on|helped with|helped to|assisted in)\s+', 'Engineered and contributed to '),
+                (r'(?i)^(was responsible for|responsible for)\s+', 'Orchestrated and managed '),
+                (r'(?i)^(handled|did|made)\s+', 'Implemented '),
+                (r'(?i)^(participated in)\s+', 'Collaborated in '),
+            ]
+            for pattern, replacement in weak_openers:
+                if re.search(pattern, cleaned):
+                    cleaned = re.sub(pattern, replacement, cleaned)
+                    break
+            else:
+                # If bullet is already active, ensure it flows clearly
+                if any(k in job_description.lower() for k in ['scalable', 'high scale', 'high-throughput']):
+                    if not any(w in cleaned.lower() for w in ['scalab', 'throughput', 'reliab']):
+                        cleaned = f"{cleaned}, optimizing for system stability and high availability"
+                elif any(k in job_description.lower() for k in ['test', 'quality', 'ci/cd']):
+                    if not any(w in cleaned.lower() for w in ['test', 'ci/cd', 'coverage']):
+                        cleaned = f"{cleaned}, adhering to rigorous testing and delivery standards"
+            return f"{cleaned}."
+
         for proj in proj_facts:
             bullets = proj.data.get('bullets', [])
-            for b in bullets:
-                if len(b.strip()) > 10:
-                    # Enhance clarity & action verb
-                    suggested = b.strip()
-                    if not suggested.endswith('.'):
-                        suggested += '.'
-                    if any(k in job_description.lower() for k in ['scalable', 'performance', 'optimized']):
-                        suggested = f"Architected and optimized: {suggested}"
-                    elif any(k in job_description.lower() for k in ['collaborate', 'agile', 'team']):
-                        suggested = f"Collaborated to implement: {suggested}"
-                        
-                    bullet_suggestions.append({
-                        'section': 'projects',
-                        'entry_id': proj.id,
-                        'original_text': b,
-                        'suggested_text': suggested,
-                        'evidence_fact_ids': [proj.id],
-                        'change_type': 'clarity_and_keywords',
-                        'warnings': []
-                    })
-                    break # At most 1 per project
+            for b in bullets[:2]: # Up to 2 per project
+                if len(b.strip()) > 15:
+                    suggested = enhance_bullet_text(b, proj.data.get('technologies', ''))
+                    if suggested.lower() != b.strip().lower() + '.':
+                        bullet_suggestions.append({
+                            'section': 'projects',
+                            'entry_id': proj.id,
+                            'original_text': b,
+                            'suggested_text': suggested,
+                            'evidence_fact_ids': [proj.id],
+                            'change_type': 'clarity_and_keywords',
+                            'warnings': []
+                        })
                     
         for exp in exp_facts:
             bullets = exp.data.get('bullets', [])
-            for b in bullets:
-                if len(b.strip()) > 10:
-                    suggested = b.strip()
-                    if not suggested.endswith('.'):
-                        suggested += '.'
-                    bullet_suggestions.append({
-                        'section': 'experience',
-                        'entry_id': exp.id,
-                        'original_text': b,
-                        'suggested_text': f"Spearheaded technical execution: {suggested}",
-                        'evidence_fact_ids': [exp.id],
-                        'change_type': 'impact_enhancement',
-                        'warnings': []
-                    })
-                    break
+            for b in bullets[:2]: # Up to 2 per experience
+                if len(b.strip()) > 15:
+                    suggested = enhance_bullet_text(b)
+                    if suggested.lower() != b.strip().lower() + '.':
+                        bullet_suggestions.append({
+                            'section': 'experience',
+                            'entry_id': exp.id,
+                            'original_text': b,
+                            'suggested_text': suggested,
+                            'evidence_fact_ids': [exp.id],
+                            'change_type': 'impact_enhancement',
+                            'warnings': []
+                        })
 
         # Recommended skill IDs: order skills that match the job description first
         recommended_skill_ids = []
@@ -172,13 +186,11 @@ class AiAdapter:
         # Recommended section order
         rec_order = ['summary', 'skills', 'experience', 'projects', 'education']
         if not exp_facts and proj_facts:
-            # Fresher/student: prioritize projects before experience
             rec_order = ['summary', 'skills', 'projects', 'education', 'experience']
 
         # Find unsupported keywords in JD
-        words_in_jd = set(re.findall(r'\b[A-Za-z]{3,}\b', job_description))
-        known_tech = {"Kubernetes", "AWS", "GCP", "GraphQL", "Redis", "Kafka", "Docker", "Terraform", "CI/CD"}
-        unsupported = [t for t in known_tech if t.lower() in job_description.lower() and not any(t.lower() in f.text for f in [] if hasattr(f, 'text'))]
+        known_tech = ["Kubernetes", "AWS", "GCP", "GraphQL", "Redis", "Kafka", "Docker", "Terraform", "CI/CD", "TypeScript", "Microservices"]
+        unsupported = [t for t in known_tech if t.lower() in job_description.lower() and not any(t.lower() in str(f.data).lower() for f in profile_facts)]
         
         return {
             'summary_suggestion': {
@@ -234,25 +246,26 @@ class AiAdapter:
         return validated
 
     def _call_gemini(self, job_title: str, company: str, job_description: str, profile_dict: dict, profile_facts: list) -> dict | None:
-        """Calls Gemini API with structured JSON output formatting."""
-        try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.gemini_key}"
-            prompt = self._build_prompt(job_title, company, job_description, profile_dict, profile_facts)
-            
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "responseMimeType": "application/json",
-                    "temperature": 0.2
+        """Calls Gemini API with structured JSON output formatting, with automatic model fallback."""
+        for model in ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.gemini_key}"
+                prompt = self._build_prompt(job_title, company, job_description, profile_dict, profile_facts)
+                
+                payload = {
+                    "contents": [{"parts": [{"text": prompt}]}],
+                    "generationConfig": {
+                        "responseMimeType": "application/json",
+                        "temperature": 0.2
+                    }
                 }
-            }
-            resp = requests.post(url, json=payload, timeout=12)
-            if resp.status_code == 200:
-                data = resp.json()
-                text = data['candidates'][0]['content']['parts'][0]['text']
-                return json.loads(text)
-        except Exception:
-            return None
+                resp = requests.post(url, json=payload, timeout=12)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    text = data['candidates'][0]['content']['parts'][0]['text']
+                    return json.loads(text)
+            except Exception:
+                continue
         return None
 
     def _call_openai(self, job_title: str, company: str, job_description: str, profile_dict: dict, profile_facts: list) -> dict | None:

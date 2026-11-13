@@ -7,15 +7,20 @@ from app.models import User
 def require_auth(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        token = None
         auth_header = request.headers.get('Authorization')
-        if not auth_header:
-            return jsonify({'error': 'Missing Authorization header'}), 401
+        if auth_header:
+            parts = auth_header.split()
+            if len(parts) == 2 and parts[0].lower() == 'bearer':
+                token = parts[1]
         
-        parts = auth_header.split()
-        if len(parts) != 2 or parts[0].lower() != 'bearer':
-            return jsonify({'error': 'Invalid Authorization header format. Expected "Bearer <token>"'}), 401
+        # Also allow token in query string for file downloads
+        if not token:
+            token = request.args.get('token')
+            
+        if not token:
+            return jsonify({'error': 'Missing Authorization header or token'}), 401
         
-        token = parts[1]
         try:
             payload = decode_jwt_token(token)
             user_id = payload.get('sub')
