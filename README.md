@@ -1,12 +1,12 @@
 # ApplyMate — AI-Assisted Job Application Workspace
 
-> **Product Promise:** Create your career profile once. Tailor a reliable resume and cover letter for each target job without repeatedly rewriting documents or damaging their formatting.
+> **Product Promise:** Create your Professional career profile once. Tailor a reliable resume and cover letter for each target job without repeatedly rewriting documents or damaging their formatting.
 
 ---
 
 ## 1. Executive Summary & Philosophy
 
-ApplyMate is a job-application workspace designed to eliminate the friction, hallucination risks, and formatting corruption common in one-click resume tools.
+ApplyMate is a Resume + job-application workspace designed to eliminate the friction, hallucination risks, and formatting corruption common in one-click resume tools.
 
 ### Core Principles
 1. **One Profile, Many Applications:** Users maintain one source of truth (**Master Career Profile**) and generate role-specific versions without overwriting it.
