@@ -20,7 +20,7 @@ export default function Login({ onSwitchToRegister }) {
     try {
       await login(email, password);
     } catch (err) {
-      setErrorMsg(err.message || 'Login failed. Please check your credentials.');
+      setErrorMsg(err.message || 'Login failed! Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -35,16 +35,16 @@ export default function Login({ onSwitchToRegister }) {
         </div>
         <h1 className="text-2xl font-bold text-content-primary tracking-tight">ApplyMate</h1>
         <p className="mt-1 text-xs text-content-secondary max-w-xs mx-auto">
-          The precision workspace for verified career profiles & tailored applications.
+          The precision workspace for verified career profiles and tailored applications.
         </p>
       </div>
 
       <div className="mt-7 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
         <div className="bg-white py-8 px-6 sm:px-9 shadow-[0_4px_24px_rgba(39,35,58,0.05)] rounded-2xl border border-app-border">
           <div className="mb-6">
-            <h2 className="text-lg font-bold text-content-primary">Sign in to your account</h2>
+            <h2 className="text-lg font-bold text-content-primary">Log in to your account</h2>
             <p className="text-xs text-content-secondary mt-0.5">
-              Enter your credentials to access your master profile.
+              Enter your credentials to access your master Resume profile.
             </p>
           </div>
 
@@ -58,7 +58,7 @@ export default function Login({ onSwitchToRegister }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-content-primary mb-1">
-                Email address
+                Email address:
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-content-muted absolute left-3 top-2.5" />
@@ -76,7 +76,7 @@ export default function Login({ onSwitchToRegister }) {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-xs font-medium text-content-primary">
-                  Password
+                  Password:
                 </label>
               </div>
               <div className="relative">
@@ -116,7 +116,7 @@ export default function Login({ onSwitchToRegister }) {
                 onClick={onSwitchToRegister}
                 className="text-brand-500 hover:text-brand-600 font-semibold transition-colors"
               >
-                Create one now
+                Create one now >
               </button>
             </p>
           </div>
