@@ -21,13 +21,13 @@ import { useToast } from '../../context/ToastContext';
 
 const STATUS_COLUMNS = [
   { id: 'Draft', label: 'Draft', color: 'border-gray-300 bg-gray-50 text-gray-700' },
-  { id: 'Ready to apply', label: 'Ready to Apply', color: 'border-amber-300 bg-amber-50 text-amber-700' },
-  { id: 'Applied', label: 'Applied', color: 'border-blue-300 bg-blue-50 text-blue-700' },
+  { id: 'Ready to Apply', label: 'Ready to Apply', color: 'border-amber-300 bg-amber-50 text-amber-700' },
+  { id: 'Applied', label: 'Already Applied', color: 'border-blue-300 bg-blue-50 text-blue-700' },
   { id: 'Assessment', label: 'Assessment', color: 'border-indigo-300 bg-indigo-50 text-indigo-700' },
   { id: 'Interview', label: 'Interview', color: 'border-purple-200 bg-purple-50 text-purple-700' },
   { id: 'Offer', label: 'Offer', color: 'border-green-300 bg-green-50 text-green-700' },
-  { id: 'Rejected', label: 'Rejected', color: 'border-red-300 bg-red-50 text-red-700' },
-  { id: 'Withdrawn', label: 'Withdrawn', color: 'border-slate-300 bg-slate-50 text-slate-700' }
+  { id: 'Rejected', label: 'Application Rejected', color: 'border-red-300 bg-red-50 text-red-700' },
+  { id: 'Withdrawn', label: 'Withdrawn Application', color: 'border-slate-300 bg-slate-50 text-slate-700' }
 ];
 
 export default function ApplicationTracker({ onSelectResume, onSelectCoverLetter, onNavigate }) {
@@ -145,7 +145,7 @@ export default function ApplicationTracker({ onSelectResume, onSelectCoverLetter
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold text-xs shadow-soft transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>New Application</span>
+            <span>New-Application</span>
           </button>
         </div>
       </div>
